@@ -119,6 +119,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Tested all RDP server management endpoints (GET, POST, PUT, DELETE). All endpoints are working correctly with proper validation and error handling."
+      - working: true
+        agent: "testing"
+        comment: "Tested Guacamole integration with RDP server management. Verified that Guacamole connection IDs are created when adding servers and deleted when removing servers. All endpoints are working correctly."
 
   - task: "RDP Connection Management API"
     implemented: true
@@ -134,6 +137,33 @@ backend:
       - working: true
         agent: "testing"
         comment: "Tested all connection management endpoints (create, list all, list active, end connection). All endpoints are working correctly with proper validation and error handling. Server status is correctly updated when connections are created and ended."
+      - working: true
+        agent: "testing"
+        comment: "Verified that connection management works correctly with Guacamole integration. Connections are properly tracked and associated with Guacamole sessions."
+
+  - task: "Guacamole Authentication API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Tested Guacamole authentication endpoints (POST /api/guacamole/auth and POST /api/guacamole/tokens). Both endpoints successfully authenticate with the mock Guacamole server and return valid tokens."
+
+  - task: "Guacamole Connection URL API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Tested GET /api/guacamole/connection/{server_id} endpoint. Successfully retrieves Guacamole connection URL for servers with valid Guacamole connection IDs."
 
 frontend:
   - task: "RDP Dashboard Interface"
