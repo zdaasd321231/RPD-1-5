@@ -1,22 +1,28 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useRDP } from "../context/RDPContext";
+import GuacamoleClient from "./GuacamoleClient";
 
 const RDPServers = () => {
   const { servers, loading, error, deleteServer, connectToServer } = useRDP();
   const [connecting, setConnecting] = useState(null);
+  const [activeConnection, setActiveConnection] = useState(null);
 
   const handleConnect = async (serverId) => {
     try {
       setConnecting(serverId);
       await connectToServer(serverId);
-      // In a real implementation, this would open the RDP client
-      alert("RDP connection initiated! (Demo mode - would open RDP client)");
+      // Open Guacamole client
+      setActiveConnection(serverId);
     } catch (err) {
       alert("Failed to connect to server");
     } finally {
       setConnecting(null);
     }
+  };
+
+  const handleDisconnect = () => {
+    setActiveConnection(null);
   };
 
   const handleDelete = async (serverId, serverName) => {
@@ -57,6 +63,16 @@ const RDPServers = () => {
     }
   };
 
+  // If active connection, show Guacamole client
+  if (activeConnection) {
+    return (
+      <GuacamoleClient 
+        serverId={activeConnection} 
+        onClose={handleDisconnect}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -75,6 +91,9 @@ const RDPServers = () => {
               ← Back to Dashboard
             </Link>
             <h1 className="text-4xl font-bold">RDP Servers</h1>
+            <p className="text-gray-400 mt-2">
+              🖥️ Web-based RDP connections via Apache Guacamole
+            </p>
           </div>
           <Link
             to="/add-server"
@@ -89,6 +108,15 @@ const RDPServers = () => {
             {error}
           </div>
         )}
+
+        {/* Guacamole Status */}
+        <div className="bg-blue-900 bg-opacity-20 border border-blue-500 border-opacity-30 p-4 rounded-lg mb-6">
+          <h3 className="text-lg font-semibold text-blue-400 mb-2">🔗 Guacamole Integration</h3>
+          <p className="text-sm text-gray-300">
+            Servers will open in a web-based RDP client powered by Apache Guacamole. 
+            No additional software required - everything runs in your browser!
+          </p>
+        </div>
 
         {/* Servers Grid */}
         {servers.length === 0 ? (
@@ -106,7 +134,7 @@ const RDPServers = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {servers.map((server) => (
-              <div key={server.id} className="bg-gray-800 p-6 rounded-lg">
+              <div key={server.id} className="bg-gray-800 p-6 rounded-lg hover:bg-gray-750 transition-colors">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{getOSIcon(server.os_type)}</span>
@@ -115,9 +143,14 @@ const RDPServers = () => {
                       <p className="text-gray-400 text-sm">{server.host}:{server.port}</p>
                     </div>
                   </div>
-                  <span className={`text-sm font-medium ${getStatusColor(server.status)}`}>
-                    {server.status.charAt(0).toUpperCase() + server.status.slice(1)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-sm font-medium ${getStatusColor(server.status)}`}>
+                      {server.status.charAt(0).toUpperCase() + server.status.slice(1)}
+                    </span>
+                    {server.guacamole_connection_id && (
+                      <span className="text-xs text-green-400 mt-1">✓ Guacamole</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="text-sm text-gray-300 mb-4">
@@ -129,20 +162,21 @@ const RDPServers = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleConnect(server.id)}
-                    disabled={connecting === server.id || server.status === "active"}
+                    disabled={connecting === server.id}
                     className={`flex-1 py-2 px-4 rounded font-medium transition-colors ${
-                      server.status === "active"
-                        ? "bg-green-600 text-white cursor-not-allowed"
-                        : connecting === server.id
+                      connecting === server.id
                         ? "bg-yellow-600 text-white cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700 text-white"
                     }`}
                   >
-                    {connecting === server.id
-                      ? "Connecting..."
-                      : server.status === "active"
-                      ? "Connected"
-                      : "Connect"}
+                    {connecting === server.id ? (
+                      <span className="flex items-center justify-center">
+                        <div className="loading-spinner mr-2"></div>
+                        Connecting...
+                      </span>
+                    ) : (
+                      "🚀 Connect"
+                    )}
                   </button>
                   <button
                     onClick={() => handleDelete(server.id, server.name)}
@@ -153,6 +187,33 @@ const RDPServers = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Connection Instructions */}
+        {servers.length > 0 && (
+          <div className="mt-8 bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">🔧 Connection Instructions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
+              <div>
+                <h4 className="font-semibold text-white mb-2">Before Connecting:</h4>
+                <ul className="space-y-1">
+                  <li>• Ensure the target server has RDP enabled</li>
+                  <li>• Verify network connectivity to the server</li>
+                  <li>• Check username/password credentials</li>
+                  <li>• Allow pop-ups for this website</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-2">Connection Features:</h4>
+                <ul className="space-y-1">
+                  <li>• Full keyboard and mouse support</li>
+                  <li>• Clipboard synchronization</li>
+                  <li>• Fullscreen mode available</li>
+                  <li>• No additional software required</li>
+                </ul>
+              </div>
+            </div>
           </div>
         )}
       </div>
