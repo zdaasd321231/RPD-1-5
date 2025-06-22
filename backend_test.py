@@ -299,11 +299,12 @@ def test_error_cases():
     
     # Test validation for required fields
     print("Testing validation for required fields...")
+    # Missing required field (password)
     invalid_server = {
-        "name": "",  # Empty name
+        "name": "Test Server",
         "host": "test.example.com",
-        "username": "test",
-        "password": "password"
+        "username": "test"
+        # Missing password field
     }
     response = requests.post(f"{API_URL}/rdp-servers", json=invalid_server)
     assert response.status_code in [400, 422], f"Expected validation error, got {response.status_code}"
