@@ -421,21 +421,36 @@ def cleanup():
 def run_all_tests():
     """Run all tests in sequence"""
     try:
-        print("\n🔍 STARTING RDP MANAGER API TESTS 🔍")
+        print("\n🔍 STARTING RDP MANAGER API TESTS WITH GUACAMOLE INTEGRATION 🔍")
         print(f"API URL: {API_URL}")
         
         # Run all tests
         test_health_check()
+        
+        # Test Guacamole authentication endpoints
+        test_guacamole_auth()
+        test_guacamole_tokens()
+        
+        # Test RDP server management
         windows_id = test_create_windows_server()
         linux_id = test_create_linux_server()
         test_list_servers()
         test_get_server_details()
         test_update_server()
+        
+        # Test Guacamole connection URL
+        test_guacamole_connection_url()
+        
+        # Test RDP connection management
         test_create_connection()
         test_list_connections()
         test_list_active_connections()
         test_end_connection()
+        
+        # Test server deletion (should also delete Guacamole connection)
         test_delete_server()
+        
+        # Test error cases
         test_error_cases()
         
         print("\n✅ ALL TESTS PASSED SUCCESSFULLY ✅")
