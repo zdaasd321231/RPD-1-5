@@ -1,15 +1,3 @@
-#!/bin/bash
-
-# Guacamole Setup Script
-# This script sets up a mock Guacamole environment for development
-
-echo "🚀 Setting up Guacamole Mock Server..."
-
-# Create mock Guacamole server directory
-mkdir -p /app/guacamole-mock
-
-# Create a simple mock server that responds to Guacamole API calls
-cat > /app/guacamole-mock/server.py << 'EOF'
 #!/usr/bin/env python3
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
@@ -96,33 +84,3 @@ if __name__ == '__main__':
     print("Mock Guacamole server running on http://localhost:8080")
     print("This is a development mock - not a real Guacamole server")
     server.serve_forever()
-EOF
-
-chmod +x /app/guacamole-mock/server.py
-
-echo "✅ Guacamole mock server created at /app/guacamole-mock/"
-echo "🔧 Starting mock server in background..."
-
-# Start the mock server in background
-cd /app/guacamole-mock
-python3 server.py > /tmp/guacamole-mock.log 2>&1 &
-MOCK_PID=$!
-
-echo "📝 Mock server PID: $MOCK_PID"
-echo "📋 Log file: /tmp/guacamole-mock.log"
-
-# Wait a moment for the server to start
-sleep 2
-
-# Test if the server is running
-if curl -s http://localhost:8080/guacamole/api/tokens > /dev/null; then
-    echo "✅ Mock Guacamole server is running successfully!"
-    echo "🌐 Available at: http://localhost:8080"
-else
-    echo "❌ Failed to start mock server"
-    exit 1
-fi
-
-echo ""
-echo "🎉 Setup complete!"
-echo "Note: This is a mock server for development. For production, use real Apache Guacamole."
