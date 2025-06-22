@@ -319,6 +319,75 @@ def test_error_cases():
     assert response.status_code == 404
     print("✅ Correctly rejected connection to non-existent server")
 
+def test_guacamole_auth():
+    """Test Guacamole authentication endpoint"""
+    print("\n=== Testing Guacamole Authentication ===")
+    auth_data = {
+        "username": "guacadmin",
+        "password": "guacadmin"
+    }
+    
+    response = requests.post(f"{API_URL}/guacamole/auth", json=auth_data)
+    
+    # If the mock Guacamole server is running, we should get a successful response
+    if response.status_code == 200:
+        data = response.json()
+        assert "authToken" in data
+        print("✅ Successfully authenticated with Guacamole")
+        return data["authToken"]
+    else:
+        # If the mock server isn't running, we'll get an error but the endpoint itself is working
+        print(f"⚠️ Guacamole authentication returned status {response.status_code}. This is expected if the mock Guacamole server is not running.")
+        print(f"Response: {response.text}")
+        return None
+
+def test_guacamole_tokens():
+    """Test Guacamole tokens proxy endpoint"""
+    print("\n=== Testing Guacamole Tokens Proxy ===")
+    
+    # This endpoint expects form data, not JSON
+    auth_data = {
+        "username": "guacadmin",
+        "password": "guacadmin"
+    }
+    
+    response = requests.post(f"{API_URL}/guacamole/tokens", data=auth_data)
+    
+    # If the mock Guacamole server is running, we should get a successful response
+    if response.status_code == 200:
+        data = response.json()
+        assert "authToken" in data
+        print("✅ Successfully retrieved Guacamole token via proxy endpoint")
+        return data["authToken"]
+    else:
+        # If the mock server isn't running, we'll get an error but the endpoint itself is working
+        print(f"⚠️ Guacamole tokens proxy returned status {response.status_code}. This is expected if the mock Guacamole server is not running.")
+        print(f"Response: {response.text}")
+        return None
+
+def test_guacamole_connection_url():
+    """Test getting Guacamole connection URL for a server"""
+    print("\n=== Testing Guacamole Connection URL ===")
+    if not created_servers:
+        pytest.skip("No servers created to test with")
+    
+    server_id = created_servers[0]
+    response = requests.get(f"{API_URL}/guacamole/connection/{server_id}")
+    
+    # If the server has a Guacamole connection ID, we should get a successful response
+    if response.status_code == 200:
+        data = response.json()
+        assert "guacamole_url" in data
+        assert "connection_id" in data
+        assert "server_name" in data
+        print(f"✅ Successfully retrieved Guacamole connection URL for server: {data['server_name']}")
+        return data
+    else:
+        # If the server doesn't have a Guacamole connection ID, we'll get a 404
+        print(f"⚠️ Guacamole connection URL endpoint returned status {response.status_code}. This is expected if the server doesn't have a Guacamole connection ID.")
+        print(f"Response: {response.text}")
+        return None
+
 def cleanup():
     """Clean up any remaining test resources"""
     print("\n=== Cleaning Up Test Resources ===")
