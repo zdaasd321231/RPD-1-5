@@ -74,6 +74,10 @@ def test_create_windows_server():
     assert data["description"] == windows_server["description"]
     assert data["status"] == "inactive"
     
+    # Check if Guacamole connection ID is set (may be None if mock server isn't running)
+    if "guacamole_connection_id" in data:
+        print(f"Guacamole connection ID: {data['guacamole_connection_id']}")
+    
     # Store the server ID for later tests
     created_servers.append(data["id"])
     print(f"✅ Windows server created with ID: {data['id']}")
