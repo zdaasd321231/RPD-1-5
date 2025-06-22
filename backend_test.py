@@ -53,7 +53,7 @@ def test_health_check():
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
-    assert data["message"] == "RDP Manager API is running"
+    assert data["message"] == "RDP Manager API with Guacamole is running"
     print("✅ Health check endpoint is working")
 
 def test_create_windows_server():
