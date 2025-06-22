@@ -234,8 +234,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "RDP Server Management API"
-    - "RDP Connection Management API" 
     - "RDP Dashboard Interface"
     - "RDP Server Management UI"
     - "Add Server Form"
